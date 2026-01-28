@@ -3,45 +3,19 @@
 @section('title', $mode === 'create' ? 'Add New Post' : 'Edit Post')
 
 @section('content')
-    <div class="tp-page-header">
-        <div>
-            <h1 class="tp-page-title">
-                {{ $mode === 'create' ? 'Add New Post' : 'Edit Post' }}
-            </h1>
+    <div class="tp-editor space-y-6">
+        <div class="tp-page-header">
+            <div>
+                <h1 class="tp-page-title">
+                    {{ $mode === 'create' ? 'Add New Post' : 'Edit Post' }}
+                </h1>
+            </div>
         </div>
 
-        <div class="flex gap-2">
-            @if ($mode === 'edit' && $post->status === 'draft')
-                <form method="POST" action="{{ route('tp.posts.publish', ['post' => $post->id]) }}">
-                    @csrf
-                    <button class="tp-button-primary" type="submit">Publish</button>
-                </form>
-            @endif
-
-            @if ($mode === 'edit' && $post->status === 'published')
-                <form method="POST" action="{{ route('tp.posts.unpublish', ['post' => $post->id]) }}">
-                    @csrf
-                    <button class="tp-button-secondary" type="submit">Unpublish</button>
-                </form>
-            @endif
-
-            @if ($mode === 'edit')
-                <form
-                    method="POST"
-                    action="{{ route('tp.posts.destroy', ['post' => $post->id]) }}"
-                    onsubmit="return confirm('Delete this post? This cannot be undone.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="tp-button-danger" aria-label="Delete post">Delete</button>
-                </form>
-            @endif
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-4">
-        <div class="space-y-5 lg:col-span-3">
-            <div class="tp-metabox">
-                <div class="tp-metabox__body space-y-4">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            <div class="space-y-6 lg:col-span-3">
+                <div class="tp-metabox">
+                    <div class="tp-metabox__body space-y-4">
                     <form
                         method="POST"
                         action="{{ $mode === 'create' ? route('tp.posts.store') : route('tp.posts.update', ['post' => $post->id]) }}"
@@ -1028,31 +1002,66 @@
             </div>
         </div>
 
-        <div class="space-y-5 lg:sticky lg:top-6 lg:self-start">
+        <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <div class="tp-metabox">
                 <div class="tp-metabox__title">Status</div>
-                <div class="tp-metabox__body space-y-2 text-sm">
-                    <div>
-                        <span class="tp-muted">Status:</span>
-                        <span class="font-semibold">{{ ucfirst($post->status) }}</span>
+                <div class="tp-metabox__body space-y-4 text-sm">
+                    <div class="space-y-2">
+                        <div>
+                            <span class="tp-muted">Status:</span>
+                            <span class="font-semibold">{{ ucfirst($post->status) }}</span>
+                        </div>
+                        <div>
+                            <span class="tp-muted">Published:</span>
+                            <span class="tp-code">{{ $post->published_at?->toDateTimeString() ?? '—' }}</span>
+                        </div>
+                        <div>
+                            <span class="tp-muted">Updated:</span>
+                            <span class="tp-code">{{ $post->updated_at?->toDateTimeString() ?? '—' }}</span>
+                        </div>
                     </div>
-                    <div>
-                        <span class="tp-muted">Published:</span>
-                        <span class="tp-code">{{ $post->published_at?->toDateTimeString() ?? '—' }}</span>
-                    </div>
-                    <div>
-                        <span class="tp-muted">Updated:</span>
-                        <span class="tp-code">{{ $post->updated_at?->toDateTimeString() ?? '—' }}</span>
-                    </div>
-                    <div class="pt-3">
-                        <button type="submit" form="post-form" class="tp-button-primary">
+
+                    <div class="tp-divider"></div>
+
+                    <div class="space-y-2">
+                        <button type="submit" form="post-form" class="tp-button-primary w-full justify-center">
                             {{ $mode === 'create' ? 'Create Post' : 'Save Changes' }}
                         </button>
+
+                        @if ($mode === 'edit' && $post->status === 'draft')
+                            <form method="POST" action="{{ route('tp.posts.publish', ['post' => $post->id]) }}">
+                                @csrf
+                                <button class="tp-button-primary w-full justify-center" type="submit">Publish</button>
+                            </form>
+                        @endif
+
+                        @if ($mode === 'edit' && $post->status === 'published')
+                            <form method="POST" action="{{ route('tp.posts.unpublish', ['post' => $post->id]) }}">
+                                @csrf
+                                <button class="tp-button-secondary w-full justify-center" type="submit">
+                                    Unpublish
+                                </button>
+                            </form>
+                        @endif
+
+                        @if ($mode === 'edit')
+                            <form
+                                method="POST"
+                                action="{{ route('tp.posts.destroy', ['post' => $post->id]) }}"
+                                onsubmit="return confirm('Delete this post? This cannot be undone.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="tp-button-danger w-full justify-center" aria-label="Delete post">
+                                    Delete
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>
 
             @includeIf('tentapress-seo::post-metabox', ['post' => $post, 'mode' => $mode])
         </div>
+    </div>
     </div>
 @endsection
