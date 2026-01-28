@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Blog</title>
 
-        @vite(['resources/css/theme.css'])
+        @vite(['resources/css/fallback.css'])
     </head>
 
     <body class="bg-white text-slate-900">

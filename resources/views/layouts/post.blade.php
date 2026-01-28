@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{{ $post->title }}</title>
 
-        @vite(['resources/css/theme.css'])
+        @vite(['resources/css/fallback.css'])
     </head>
 
     <body class="bg-white text-slate-900">
@@ -18,7 +18,7 @@
         <main class="mx-auto max-w-3xl space-y-10 px-6 py-12">
             <article class="space-y-8">
                 <header class="space-y-3">
-                    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Blog</div>
+                    <div class="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">Blog</div>
                     <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                         {{ $post->title }}
                     </h1>
@@ -26,6 +26,7 @@
                         @if ($publishedLabel !== '')
                             <span>{{ $publishedLabel }}</span>
                         @endif
+
                         @if ($author)
                             <span>By {{ $author->name ?: 'Author #' . $author->id }}</span>
                         @endif
