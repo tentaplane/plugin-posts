@@ -19,7 +19,6 @@ final class TpPost extends Model
         'status',
         'layout',
         'blocks',
-        'excerpt',
         'published_at',
         'author_id',
         'created_by',

@@ -24,7 +24,6 @@ final class CreateController
             'status' => 'draft',
             'layout' => null,
             'blocks' => [],
-            'excerpt' => null,
             'author_id' => $nowUserId ?: null,
         ]);
 

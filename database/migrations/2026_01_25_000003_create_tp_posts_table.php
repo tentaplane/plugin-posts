@@ -20,7 +20,6 @@ return new class () extends Migration {
             $table->string('layout')->nullable();
             $table->json('blocks')->nullable();
 
-            $table->text('excerpt')->nullable();
             $table->timestamp('published_at')->nullable()->index();
 
             $table->unsignedBigInteger('author_id')->nullable()->index();
