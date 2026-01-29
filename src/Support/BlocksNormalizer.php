@@ -14,7 +14,7 @@ final readonly class BlocksNormalizer
     }
 
     /**
-     * @return array<int,array{type:string,version:int,props:array<string,mixed>}>
+     * @return array<int,array{type:string,version:int,props:array<string,mixed>,variant?:string}>
      */
     public function normalize(mixed $raw): array
     {
@@ -35,6 +35,7 @@ final readonly class BlocksNormalizer
             }
 
             $props = isset($b['props']) && is_array($b['props']) ? $b['props'] : [];
+            $variant = isset($b['variant']) ? trim((string) $b['variant']) : '';
 
             // Strip UI-only keys nested in props just in case
             unset($props['_collapsed'], $props['_key']);
@@ -53,10 +54,15 @@ final readonly class BlocksNormalizer
                 $props = $this->mergeDefaults($def->defaults, $props);
             }
 
+            if ($variant === '' && $def && is_string($def->defaultVariant)) {
+                $variant = $def->defaultVariant;
+            }
+
             $out[] = [
                 'type' => $type,
                 'version' => $version,
                 'props' => $props,
+                ...($variant !== '' ? ['variant' => $variant] : []),
             ];
         }
 
