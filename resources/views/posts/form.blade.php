@@ -249,6 +249,11 @@
                                                                 class="tp-muted text-xs font-normal"
                                                                 x-text="'v' + block.version"></span>
                                                         </template>
+                                                        <template x-if="block.variant">
+                                                            <span
+                                                                class="tp-muted text-xs font-normal"
+                                                                x-text="block.variant"></span>
+                                                        </template>
                                                     </div>
                                                 </div>
 
@@ -296,6 +301,21 @@
                                                 class="tp-metabox__body space-y-4"
                                                 x-show="!block._collapsed"
                                                 x-cloak>
+                                                <template x-if="variantsFor(block.type).length > 0">
+                                                    <div class="tp-field">
+                                                        <label class="tp-label">Variant</label>
+                                                        <select class="tp-select" x-model="block.variant">
+                                                            <template
+                                                                x-for="variant in variantsFor(block.type)"
+                                                                :key="variant.key">
+                                                                <option
+                                                                    :value="variant.key"
+                                                                    x-text="variant.label || variant.key"></option>
+                                                            </template>
+                                                        </select>
+                                                    </div>
+                                                </template>
+
                                                 <template x-if="fieldsFor(block.type).length > 0">
                                                     <div class="space-y-4">
                                                         <template
@@ -307,9 +327,67 @@
                                                                 <template x-if="field.type === 'textarea'">
                                                                     <textarea
                                                                         class="tp-textarea"
-                                                                        rows="4"
+                                                                        :rows="field.rows ? field.rows : 4"
+                                                                        :placeholder="field.placeholder || ''"
                                                                         :value="getProp(index, field.key)"
                                                                         @input="setProp(index, field.key, $event.target.value)"></textarea>
+                                                                </template>
+
+                                                                <template x-if="field.type === 'select'">
+                                                                    <select
+                                                                        class="tp-select"
+                                                                        :value="getProp(index, field.key)"
+                                                                        @change="setProp(index, field.key, $event.target.value)">
+                                                                        <template
+                                                                            x-for="opt in selectOptions(field)"
+                                                                            :key="opt.value">
+                                                                            <option
+                                                                                :value="opt.value"
+                                                                                x-text="opt.label"></option>
+                                                                        </template>
+                                                                    </select>
+                                                                </template>
+
+                                                                <template x-if="field.type === 'toggle'">
+                                                                    <label class="flex items-center gap-2 text-sm">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            class="tp-checkbox"
+                                                                            :checked="!!getPropRaw(index, field.key)"
+                                                                            @change="setProp(index, field.key, $event.target.checked)" />
+                                                                        <span x-text="field.toggle_label || 'Enabled'"></span>
+                                                                    </label>
+                                                                </template>
+
+                                                                <template x-if="field.type === 'number'">
+                                                                    <input
+                                                                        class="tp-input"
+                                                                        type="number"
+                                                                        :min="field.min !== undefined ? field.min : null"
+                                                                        :max="field.max !== undefined ? field.max : null"
+                                                                        :step="field.step !== undefined ? field.step : null"
+                                                                        :placeholder="field.placeholder || ''"
+                                                                        :value="getProp(index, field.key)"
+                                                                        @input="setProp(index, field.key, $event.target.value)" />
+                                                                </template>
+
+                                                                <template x-if="field.type === 'range'">
+                                                                    <input
+                                                                        class="tp-input"
+                                                                        type="range"
+                                                                        :min="field.min !== undefined ? field.min : null"
+                                                                        :max="field.max !== undefined ? field.max : null"
+                                                                        :step="field.step !== undefined ? field.step : null"
+                                                                        :value="getProp(index, field.key)"
+                                                                        @input="setProp(index, field.key, $event.target.value)" />
+                                                                </template>
+
+                                                                <template x-if="field.type === 'color'">
+                                                                    <input
+                                                                        class="tp-input h-10 p-1"
+                                                                        type="color"
+                                                                        :value="getProp(index, field.key)"
+                                                                        @input="setProp(index, field.key, $event.target.value)" />
                                                                 </template>
 
                                                                 <template x-if="field.type === 'media'">
@@ -450,10 +528,20 @@
                                                                 </template>
 
                                                                 <template
-                                                                    x-if="field.type !== 'textarea' && field.type !== 'media' && field.type !== 'media-list'">
+                                                                    x-if="
+                                                                        field.type !== 'textarea' &&
+                                                                        field.type !== 'media' &&
+                                                                        field.type !== 'media-list' &&
+                                                                        field.type !== 'select' &&
+                                                                        field.type !== 'toggle' &&
+                                                                        field.type !== 'number' &&
+                                                                        field.type !== 'range' &&
+                                                                        field.type !== 'color'
+                                                                    ">
                                                                     <input
                                                                         class="tp-input"
                                                                         :type="field.type === 'url' ? 'url' : 'text'"
+                                                                        :placeholder="field.placeholder || ''"
                                                                         :value="getProp(index, field.key)"
                                                                         @input="setProp(index, field.key, $event.target.value)" />
                                                                 </template>
@@ -635,14 +723,26 @@
                                             out._collapsed = !!out._collapsed;
                                             out._key = out._key || this.uid();
 
+                                            const def = this.defByType(out.type);
+
                                             // If version missing, use registry version if available, else 1
                                             if (!out.version) {
-                                                const def = this.defByType(out.type);
                                                 out.version = def && def.version ? parseInt(def.version) : 1;
                                             }
 
+                                            const variants = this.variantsFor(out.type);
+                                            if (variants.length) {
+                                                const keys = variants.map((v) => String(v.key));
+                                                const current =
+                                                    typeof out.variant === 'string' ? out.variant.trim() : '';
+                                                out.variant = keys.includes(current)
+                                                    ? current
+                                                    : this.defaultVariantFor(out.type);
+                                            } else {
+                                                out.variant = '';
+                                            }
+
                                             // Apply shallow defaults for missing keys
-                                            const def = this.defByType(out.type);
                                             if (def && def.defaults && typeof def.defaults === 'object') {
                                                 out.props = this.mergeDefaults(def.defaults, out.props);
                                             }
@@ -678,7 +778,42 @@
 
                                         fieldsFor(type) {
                                             const def = this.defByType(type);
-                                            return def && Array.isArray(def.fields) ? def.fields : [];
+                                            const fields = def && Array.isArray(def.fields) ? def.fields : [];
+                                            return fields.filter((f) => f && f.key && f.label && f.type);
+                                        },
+
+                                        variantsFor(type) {
+                                            const def = this.defByType(type);
+                                            const variants = def && Array.isArray(def.variants) ? def.variants : [];
+                                            return variants.filter((v) => v && v.key);
+                                        },
+
+                                        defaultVariantFor(type) {
+                                            const def = this.defByType(type);
+                                            const variants = this.variantsFor(type);
+                                            if (def && def.default_variant) {
+                                                return String(def.default_variant);
+                                            }
+                                            if (variants.length) {
+                                                return String(variants[0].key || '');
+                                            }
+                                            return '';
+                                        },
+
+                                        selectOptions(field) {
+                                            if (!field || !Array.isArray(field.options)) return [];
+                                            return field.options.map((opt) => {
+                                                if (opt && typeof opt === 'object') {
+                                                    return {
+                                                        value: String(opt.value ?? ''),
+                                                        label: String(opt.label ?? opt.value ?? ''),
+                                                    };
+                                                }
+                                                return {
+                                                    value: String(opt ?? ''),
+                                                    label: String(opt ?? ''),
+                                                };
+                                            });
                                         },
 
                                         mediaOption(value) {
@@ -857,9 +992,11 @@
                                             if (!this.addType) return;
                                             const def = this.defByType(this.addType);
                                             const defaults = def && def.defaults ? def.defaults : {};
+                                            const variant = this.defaultVariantFor(this.addType);
                                             this.blocks.push(
                                                 this.decorateBlock({
                                                     type: this.addType,
+                                                    ...(variant ? { variant } : {}),
                                                     props: this.deepClone(defaults),
                                                 }),
                                             );
@@ -986,6 +1123,9 @@
                                             const safe = this.blocks.map((b) => ({
                                                 type: b.type,
                                                 version: b.version,
+                                                ...(b.variant && typeof b.variant === 'string'
+                                                    ? { variant: b.variant.trim() }
+                                                    : {}),
                                                 props: b.props,
                                             }));
                                             this.advancedJson = JSON.stringify(safe, null, 2);

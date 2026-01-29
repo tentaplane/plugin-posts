@@ -72,6 +72,8 @@ final class CreateController
                 'description' => (string) ($def->description ?? ''),
                 'version' => (int) ($def->version ?? 1),
                 'fields' => is_array($def->fields ?? null) ? $def->fields : [],
+                'variants' => is_array($def->variants ?? null) ? $def->variants : [],
+                'default_variant' => isset($def->defaultVariant) ? (string) $def->defaultVariant : null,
                 'defaults' => is_array($def->defaults ?? null) ? $def->defaults : [],
                 'example' => is_array($def->example ?? null) ? $def->example : [],
                 'view' => isset($def->view) ? (string) $def->view : null,
