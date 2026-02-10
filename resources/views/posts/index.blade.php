@@ -77,7 +77,9 @@
                 <div class="flex-1"></div>
 
                 <div class="flex gap-2">
+                    <label class="sr-only" for="posts-search">Search posts</label>
                     <input
+                        id="posts-search"
                         name="s"
                         value="{{ $search }}"
                         class="tp-input w-full sm:w-64"
